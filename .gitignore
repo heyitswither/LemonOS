@@ -1,0 +1,6 @@
+/toolchain
+!/toolchain/Makefile
+kernel.o
+boot.o
+lemonos.iso
+lemonos.bin
