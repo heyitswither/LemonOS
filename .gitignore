@@ -1,4 +1,4 @@
-/toolchain
+/toolchain/*
 !/toolchain/Makefile
 kernel.o
 boot.o
