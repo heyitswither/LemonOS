@@ -11,7 +11,7 @@ iso: kernel
 	cp lemonos.bin isodir/boot
 	grub-mkrescue -o lemonos.iso isodir
 
-kernel: tools
+kernel: 
 	$(ASM) boot.s -o boot.o
 	$(CC) -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 	$(CC) -T linker.ld -o lemonos.bin -ffreestanding -O2 -nostdlib boot.o kernel.o -lgcc
