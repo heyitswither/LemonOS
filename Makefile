@@ -19,6 +19,9 @@ kernel:
 test:
 	qemu-system-i386 -kernel lemonos.bin
 
+test-iso:
+	qemu-system-i386 -cdrom lemonos.iso
+
 tools:
 	$(MAKE) -C toolchain
 
