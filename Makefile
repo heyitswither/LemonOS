@@ -21,3 +21,6 @@ test:
 
 tools:
 	$(MAKE) -C toolchain
+
+clean:
+	$(RM) -r isodir lemonos.bin lemonos.iso kernel.o boot.o

@@ -115,10 +115,5 @@ void kernel_main(void) {
     terminal_initialize();
  
     /* Newline support is left as an exercise. */
-    terminal_writestring("Hello, kernel World!\n");
-    terminal_writestring("newline test\n");
-    terminal_writestring("this string is longer than 80 characters abcdefghijklmnopqrstuvwxy 1234567890   this part is over!");
-    terminal_writestring("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n");
-    terminal_writestring("line after the numbers\n");
-    terminal_writestring("test\n");
+    terminal_writestring("Welcome to LemonOS!\n");
 }

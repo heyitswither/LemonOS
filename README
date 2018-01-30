@@ -1,0 +1,10 @@
+LemonOS
+=======
+
+LemonOS is an operating system written in C that I made just to figure out how an OS works.
+
+Compiling
+=========
+
+`make tools` to create the toolchain
+`make` to compile the kernel and create an ISO
