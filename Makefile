@@ -17,10 +17,10 @@ kernel:
 	$(CC) -T linker.ld -o lemonos.bin -ffreestanding -O2 -nostdlib boot.o kernel.o -lgcc
 
 test:
-	qemu-system-i386 -kernel lemonos.bin
+	qemu-system-i386 -curses -kernel lemonos.bin
 
 test-iso:
-	qemu-system-i386 -cdrom lemonos.iso
+	qemu-system-i386 -curses -cdrom lemonos.iso
 
 tools:
 	$(MAKE) -C toolchain
