@@ -22,6 +22,12 @@ test:
 test-iso:
 	qemu-system-i386 -curses -cdrom lemonos.iso
 
+test-gui:
+	qemu-system-i386 -kernel lemonos.bin
+
+test-iso-gui:
+	qemu-system-i386 -cdrom lemonos.iso
+
 tools:
 	$(MAKE) -C toolchain
 

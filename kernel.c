@@ -1,6 +1,12 @@
 #include <stdbool.h> /* C doesn't have booleans by default. */
 #include <stddef.h>
 #include <stdint.h>
+
+#include "lstdlib.h"
+#include "asm.h"
+#include "cursor.h"
+#include "strings.h"
+#include "keyboard.h"
  
 /* Check if the compiler thinks we are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -40,24 +46,19 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
     return (uint16_t) uc | (uint16_t) color << 8;
 }
  
-size_t strlen(const char* str) {
-    size_t len = 0;
-    while (str[len])
-        len++;
-    return len;
-}
- 
-static const size_t VGA_WIDTH = 80;
-static const size_t VGA_HEIGHT = 25;
+size_t VGA_WIDTH;
+size_t VGA_HEIGHT;
  
 size_t terminal_row;
 size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
- 
+
 void terminal_initialize(void) {
     terminal_row = 0;
     terminal_column = 0;
+    VGA_WIDTH = 80;
+    VGA_HEIGHT = 25;
     terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
     terminal_buffer = (uint16_t*) 0xB8000;
     for (size_t y = 0; y < VGA_HEIGHT; y++) {
@@ -86,23 +87,25 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 }
  
 void terminal_putchar(char c) {
+    if (c == 0)
+        return;
     terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
-    if (++terminal_column == VGA_WIDTH)
+    if (c == '\n') {
+        terminal_row++;
+        terminal_column = 0;
+        return;
+    }
+    if (++terminal_column >= VGA_WIDTH)
         terminal_column = 0;
     if (terminal_row == VGA_HEIGHT) {   
         terminal_scroll();
         terminal_row--;
     }
 }
- 
+
 void terminal_write(const char* data, size_t size) {
     for (size_t i = 0; i < size; i++) {
-        if (data[i] == '\n') {
-            terminal_row++;
-            terminal_column = 0;
-        } else {
-            terminal_putchar(data[i]);
-        }
+        terminal_putchar(data[i]);
     }
 }
  
@@ -110,10 +113,69 @@ void terminal_writestring(const char* data) {
     terminal_write(data, strlen(data));
 }
 
+char kgetchar()
+{
+    char c = scancodes[get_scancode()+1];
+    if (c == 0x7f) {
+        /* backspace */
+        if (terminal_buffer[terminal_row * VGA_WIDTH + --terminal_column] == '\n') {
+            terminal_putentryat(' ', terminal_color, --terminal_column, --terminal_row);
+        } else {
+            terminal_putentryat(' ', terminal_color, --terminal_column, terminal_row);
+        }
+    }
+    return c;
+}
+
+char getchar()
+{
+    return scancodes[get_scancode()+1];
+}
+
+char* scan()
+{
+    char* ret = (char*) 0xF8000;
+    char c;
+    int i = 0;
+    while (c = getchar()) {
+        if ((c == '\n') || (c == EOF))
+            break;
+        ret[i] = c;
+        if (c == 0x7f)
+            i--;
+    }
+    ret[i] = '\0';
+    return ret;
+} 
+
 void kernel_main(void) {
     /* Initialize terminal interface */
     terminal_initialize();
+    enable_cursor(0, VGA_HEIGHT);
+    update_cursor(terminal_column-1, terminal_row, VGA_WIDTH);
  
     /* Newline support is left as an exercise. */
-    terminal_writestring("Welcome to LemonOS!\n");
+    terminal_writestring("Welcome to ");
+    terminal_setcolor(VGA_COLOR_LIGHT_BROWN);
+    terminal_writestring("LemonOS");
+    terminal_setcolor(VGA_COLOR_LIGHT_GREY);
+    terminal_writestring("!\n");
+
+    // TODO set scancode set to 1
+    //outb(0x60, 0xf0);
+    //outb(0x64, 0x10);
+
+    int i = 0;
+    char c;
+    char inbuf[512];
+    while (true) {
+        while ((c = kgetchar()) != '\n') {
+            inbuf[i] = c;
+            terminal_putchar(c);
+            update_cursor(terminal_column-1, terminal_row, VGA_WIDTH);
+        }
+        terminal_writestring("\n");
+        terminal_writestring(inbuf);
+        i = 0;
+    }
 }
