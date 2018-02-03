@@ -1,6 +1,6 @@
 /toolchain/*
 !/toolchain/Makefile
 kernel.o
-boot.o
+bootloader/boot.o
 lemonos.iso
 lemonos.bin
