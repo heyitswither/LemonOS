@@ -1,6 +1,6 @@
 .ONESHELL:all
 CC=gcc
-export PREFIX="$(HOME)/LemonOS/toolchain"
+export PREFIX="$(CURDIR)"
 export TARGET=i686-elf
 export PATH:="$(PREFIX)/bin:$(PATH)"
 
@@ -15,6 +15,7 @@ binutils:
 	../binutils-2.29/configure --target=$(TARGET) --prefix="$(PREFIX)" --with-sysroot --disable-nls --disable-werror
 	$(MAKE)
 	$(MAKE) install
+	$(MAKE) clean
 	cd ../..
 
 gcc:
@@ -29,6 +30,10 @@ gcc:
 	$(MAKE) all-target-libgcc
 	$(MAKE) install-gcc
 	$(MAKE)	install-target-libgcc
+	$(MAKE) clean
+
+uninstall:
+	$(RM) -r bin i686-elf include lib libexec share src
 
 clean:
-	$(RM) -r bin i686-elf include lib libexec share src
+	$(RM) -r src
