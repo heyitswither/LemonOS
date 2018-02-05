@@ -2,11 +2,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "lstdlib.h"
-#include "asm.h"
-#include "cursor.h"
-#include "strings.h"
-#include "keyboard.h"
+#include <lstdlib.h>
+#include <asm.h>
+#include <cursor.h>
+#include <strings.h>
+#include <keyboard.h>
  
 /* Check if the compiler thinks we are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -162,20 +162,15 @@ void kernel_main(void) {
     terminal_writestring("!\n");
 
     // TODO set scancode set to 1
-    //outb(0x60, 0xf0);
-    //outb(0x64, 0x10);
+    outb(0x60, 0xf0);
+    outb(0x64, 0x10);
 
-    int i = 0;
     char c;
-    char inbuf[512];
     while (true) {
         while ((c = kgetchar()) != '\n') {
-            inbuf[i] = c;
             terminal_putchar(c);
-            update_cursor(terminal_column-1, terminal_row, VGA_WIDTH);
+            update_cursor(terminal_column, terminal_row, VGA_WIDTH);
         }
         terminal_writestring("\n");
-        terminal_writestring(inbuf);
-        i = 0;
     }
 }
