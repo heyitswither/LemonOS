@@ -1,6 +1,7 @@
 /toolchain/*
 !/toolchain/Makefile
-kernel.o
-bootloader/boot.o
-lemonos.iso
-lemonos.bin
+/isodir
+/kernel.o
+/bootloader/boot.o
+/lemonos.iso
+/lemonos.bin
