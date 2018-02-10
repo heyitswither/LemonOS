@@ -7,6 +7,7 @@ Compiling
 =========
 
 `make tools` to create the toolchain
-`make` to compile the kernel and create an ISO
+`make` to compile the kernel
+`make iso` to create an ISO
 `make test` to boot the kernel in QEMU
 `make test-iso` to boot the ISO in QEMU
