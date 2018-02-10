@@ -48,7 +48,9 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
  
 size_t VGA_WIDTH;
 size_t VGA_HEIGHT;
- 
+
+int SHIFT = 0;
+
 size_t terminal_row;
 size_t terminal_column;
 uint8_t terminal_color;
@@ -89,18 +91,22 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 void terminal_putchar(char c) {
     if (c == 0)
         return;
-    terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
     if (c == '\n') {
         terminal_row++;
         terminal_column = 0;
+        update_cursor(terminal_column, terminal_row, VGA_WIDTH);
         return;
     }
-    if (++terminal_column >= VGA_WIDTH)
+    terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+    if (++terminal_column >= VGA_WIDTH) {
+        terminal_row++;
         terminal_column = 0;
+    }
     if (terminal_row == VGA_HEIGHT) {   
         terminal_scroll();
         terminal_row--;
     }
+    update_cursor(terminal_column, terminal_row, VGA_WIDTH);
 }
 
 void terminal_write(const char* data, size_t size) {
@@ -115,16 +121,27 @@ void terminal_writestring(const char* data) {
 
 char kgetchar()
 {
-    char c = scancodes[get_scancode()+1];
+    int sc = get_scancode();
+    char c = scancodes[sc+1];
     if (c == 0x7f) {
         /* backspace */
-        if (terminal_buffer[terminal_row * VGA_WIDTH + --terminal_column] == '\n') {
-            terminal_putentryat(' ', terminal_color, --terminal_column, --terminal_row);
-        } else {
-            terminal_putentryat(' ', terminal_color, --terminal_column, terminal_row);
-        }
+        do {
+            update_cursor(--terminal_column, terminal_row, VGA_WIDTH);
+            terminal_putentryat(0, terminal_color, terminal_column, terminal_row);
+        } while (terminal_buffer[terminal_row * VGA_WIDTH + terminal_column-1] == 0);
+        return 0;
     }
-    return c;
+    if (sc == 0x2A)
+        SHIFT = 0x2A;
+    if ((sc == 0xAA) && (SHIFT == 0x2A))
+        SHIFT = 0;
+    if (sc == 0x36)
+        SHIFT = 0x36;
+    if ((sc == 0xB6) && (SHIFT == 0x36))
+        SHIFT = 0;
+    if (sc == 0x3A)
+        SHIFT = !SHIFT;
+    return SHIFT ? c : tolower(c);
 }
 
 char getchar()
@@ -137,7 +154,7 @@ char* scan()
     char* ret = (char*) 0xF8000;
     char c;
     int i = 0;
-    while (c = getchar()) {
+    while ((c = getchar())) {
         if ((c == '\n') || (c == EOF))
             break;
         ret[i] = c;
@@ -149,28 +166,20 @@ char* scan()
 } 
 
 void kernel_main(void) {
-    /* Initialize terminal interface */
     terminal_initialize();
     enable_cursor(0, VGA_HEIGHT);
-    update_cursor(terminal_column-1, terminal_row, VGA_WIDTH);
  
-    /* Newline support is left as an exercise. */
     terminal_writestring("Welcome to ");
     terminal_setcolor(VGA_COLOR_LIGHT_BROWN);
     terminal_writestring("LemonOS");
     terminal_setcolor(VGA_COLOR_LIGHT_GREY);
     terminal_writestring("!\n");
 
-    // TODO set scancode set to 1
-    outb(0x60, 0xf0);
-    outb(0x64, 0x10);
-
     char c;
     while (true) {
-        while ((c = kgetchar()) != '\n') {
+        while ((c = kgetchar())) {
             terminal_putchar(c);
             update_cursor(terminal_column, terminal_row, VGA_WIDTH);
         }
-        terminal_writestring("\n");
     }
 }

@@ -4,7 +4,7 @@ CC=i686-elf-gcc
 ASM=i686-elf-as
 CFLAGS=-std=gnu99 -masm=att -ffreestanding -O2 -Wall -Wextra -I./include/
 
-notarget: iso
+notarget: kernel
 
 iso: kernel
 	mkdir -p isodir/boot/grub
