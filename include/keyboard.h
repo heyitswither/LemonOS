@@ -1,9 +1,7 @@
 #ifndef _KEYBOARD_H
 #define _KEYBOARD_H
 
-#ifndef _ASM_H
-#include "asm.h"
-#endif
+#include <asm.h>
 
 char scancodes[256] = {0, 0, /*ESC*/ 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
                       '-', '=', /*DEL*/ 0x7f, '\t', 'Q', 'W', 'E', 'R', 'T', 'Y',
@@ -22,13 +20,6 @@ char scancodes[256] = {0, 0, /*ESC*/ 0, '1', '2', '3', '4', '5', '6', '7', '8', 
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-char get_scancode()
-{
-    char flag = inb(0x64);
-    while(!(flag & 1)) {
-        flag = inb(0x64);
-    }
-    return inb(0x60);
-}
+char get_scancode(void);
 
 #endif

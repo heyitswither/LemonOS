@@ -7,6 +7,7 @@ export TARGET=i686-elf
 export PATH:="$(PREFIX)/bin:$(PATH)"
 
 notarget: binutils gcc
+.NOTPARALLEL:
 
 binutils:
 	mkdir -p src/build-binutils
