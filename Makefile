@@ -1,25 +1,22 @@
 .ONESHELL:all
 export PATH:= toolchain/bin:$(PATH)
 CC=i686-elf-gcc
-ASM=i686-elf-as
-CFLAGS=-std=gnu99 -masm=att -ffreestanding -O2 -Wall -Wextra -Werror -Wpedantic -I./include/
-OBJS=kernel.o lstdlib.o keyboard.o asm.o cursor.o strings.o
+AS=i686-elf-as
+CFLAGS=-std=gnu99 -masm=att -ffreestanding -O2 -Wall -I./include/
+OBJS=kernel.o lstdlib.o keyboard.o cursor.o strings.o
 
-notarget: kernel
+notarget: los
 
-iso: kernel
+iso: los
 	mkdir -p isodir/boot/grub
 	cp grub.cfg isodir/boot/grub
 	cp lemonos.bin isodir/boot
 	grub-mkrescue -o lemonos.iso isodir
 
-kernel: $(OBJS)
+bootloader: bootloader/boot.o
 
-bootloader:
-	$(ASM) bootloader/boot.s -o bootloader/boot.o
-
-los: kernel bootloader
-	$(CC) -T linker.ld -o lemonos.bin -ffreestanding -O2 -nostdlib bootloader/boot.o $(OBJS) -lgcc
+los: $(OBJS) bootloader
+	$(CC) -T linker.ld -o lemonos.bin -ffreestanding -O2 -nostartfiles -nostdlib bootloader/boot.o $(OBJS) -lgcc
 
 test:
 	qemu-system-i386 -curses -kernel lemonos.bin

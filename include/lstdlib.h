@@ -3,4 +3,7 @@
 
 #define EOF -1
 
+#include <stddef.h>
+#include <stdbool.h>
+
 #endif
